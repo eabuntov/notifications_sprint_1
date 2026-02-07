@@ -1,0 +1,108 @@
+version: "3.9"
+
+networks:
+  app-network:
+    external: true
+
+volumes:
+  notification_pgdata:
+  redis_data:
+
+services:
+
+  # ===============================
+  # Notification Database
+  # ===============================
+  notification_db:
+    image: postgres:17.6-alpine
+    container_name: notification_db
+    environment:
+      POSTGRES_DB: notifications
+      POSTGRES_USER: notify
+      POSTGRES_PASSWORD: notify_pass
+    volumes:
+      - notification_pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notify"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===============================
+  # Redis (rate limits, checkpoints)
+  # ===============================
+  notification_redis:
+    image: redis:8.2.2-alpine
+    container_name: notification_redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
+  # ===============================
+  # Notification API
+  # ===============================
+  notification_api:
+    build:
+      context: ./notification_api
+    container_name: notification_api
+    environment:
+      DATABASE_URL: postgresql://notify:notify_pass@notification_db:5432/notifications
+      REDIS_URL: redis://notification_redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      JAEGER_AGENT_HOST: jaeger
+    depends_on:
+      notification_db:
+        condition: service_healthy
+      notification_redis:
+        condition: service_started
+    networks:
+      - app-network
+    ports:
+      - "8081:8000"
+    restart: unless-stopped
+
+  # ===============================
+  # Notification Worker (email)
+  # ===============================
+  notification_worker:
+    build:
+      context: ./notification_worker
+    environment:
+      DATABASE_URL: postgresql://notify:notify_pass@notification_db:5432/notifications
+      REDIS_URL: redis://notification_redis:6379/0
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_GROUP_ID: notification-workers
+      EMAIL_PROVIDER: ses   # or sendgrid, smtp
+      JAEGER_AGENT_HOST: jaeger
+    depends_on:
+      notification_db:
+        condition: service_healthy
+      notification_redis:
+        condition: service_started
+    networks:
+      - app-network
+    deploy:
+      replicas: 3
+    restart: unless-stopped
+
+  # ===============================
+  # Auto Notification Generator
+  # ===============================
+  notification_generator:
+    build:
+      context: ./notification_generator
+    environment:
+      DATABASE_URL: postgresql://notify:notify_pass@notification_db:5432/notifications
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      CLICKHOUSE_HOST: ch
+      REDIS_URL: redis://notification_redis:6379/0
+    depends_on:
+      notification_db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+
