@@ -1,0 +1,92 @@
+@startuml
+
+
+title Online Cinema Platform – Analytics-Oriented Architecture
+
+top to bottom direction
+
+actor User
+actor Admin
+actor Analyst
+
+package "Docker Network: app-network" {
+
+  component "NGINX\n(Reverse Proxy)" as nginx
+
+  together {
+    component "Django Admin\n(movies_admin)" as django
+    component "FastAPI App\n(Public API + Event SDK)" as fastapi
+  }
+
+  together {
+    component "Analytics Ingest API\n(FastAPI)" as ingest
+    component "Analytics Query API\n(FastAPI)" as analytics_api
+  }
+
+  component "Auth Service" as auth
+  component "ETL / Stream Worker" as etl
+
+  queue "Kafka\n(Event Stream)" as kafka
+
+  database "ClickHouse\n(Analytics DWH)" as ch
+  database "Theatre DB\n(PostgreSQL)" as theatre_db
+  database "Auth DB\n(PostgreSQL)" as auth_db
+  database "Redis\n(Cache / Sessions)" as redis
+
+  component "Jaeger\n(Tracing)" as jaeger
+}
+
+User --> nginx : HTTP(S)
+Admin --> nginx : HTTP(S)
+Analyst --> nginx : Analytics queries
+
+nginx --> django : Admin UI
+nginx --> fastapi : Public API
+nginx --> ingest : Event ingestion
+nginx --> analytics_api : Analytics API
+
+django --> auth : Auth
+fastapi --> auth : Auth
+ingest --> auth : Optional user resolution
+
+auth --> auth_db : users / tokens
+auth --> redis : sessions
+auth --> jaeger : traces
+
+fastapi --> theatre_db : business data
+fastapi --> redis : cache
+
+' ===== Analytics pipeline =====
+fastapi --> ingest : UI events
+ingest --> kafka : publish events
+
+kafka --> etl : consume streams
+etl --> ch : write events
+
+analytics_api --> ch : read aggregates
+analytics_api --> redis : cache dashboards
+
+' ===== Observability =====
+fastapi --> jaeger
+ingest --> jaeger
+analytics_api --> jaeger
+
+note right of kafka
+Event types:
+- Click events
+- Page views
+- Video quality changes
+- Video completion
+- Search filter usage
+end note
+
+note right of ch
+ClickHouse tables:
+- events_raw
+- page_views
+- video_events
+- search_filters
+Partitioned by date
+end note
+
+@enduml
