@@ -1,5 +1,5 @@
-from taskiq_redis import RedisBroker
+from taskiq_redis import RedisStreamBroker
 
-broker = RedisBroker(
+broker = RedisStreamBroker(
     url="redis://notification_redis:6379/1",
 )

@@ -1,16 +1,16 @@
 import uuid
 from sqlalchemy.exc import IntegrityError
 
-from .db import SessionLocal
-from .kafka import consumer
-from .models import (
+from db import SessionLocal
+from kafka_consumer import consumer
+from models import (
     Notification,
     NotificationTarget,
     NotificationSendLog,
 )
-from .email import send_email
-from .templates import render_template
-from .settings import can_send_email
+from notif_email import send_email
+from templates import render_template
+from settings import can_send_email
 
 
 def resolve_targets(db, notification_id):

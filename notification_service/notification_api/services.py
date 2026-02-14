@@ -1,8 +1,8 @@
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .models import Notification, NotificationTarget
-from .kafka import publish_notification
+from models import Notification, NotificationTarget
+from kafka_producer import publish_notification
 
 
 class NotificationService:

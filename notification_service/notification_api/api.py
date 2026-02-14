@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from .db import SessionLocal
-from .schemas import InstantNotificationRequest, NotificationResponse
-from .services import NotificationService
+from db import SessionLocal
+from schemas import InstantNotificationRequest, NotificationResponse
+from services import NotificationService
 
 router = APIRouter()
 

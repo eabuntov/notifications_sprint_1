@@ -1,14 +1,15 @@
+import os
 from datetime import datetime, timedelta
 import requests
 from taskiq import TaskiqDepends, Context
 
-from .broker import broker
-from .analytics import has_events_since
-from .state import GeneratorState
+from broker import broker
+from analytics import has_events_since
+from state import GeneratorState
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "postgresql+psycopg2://notify:notify_pass@notification_db:5432/notifications"
+DATABASE_URL = os.getenv('NOTIF_DB_URL')
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
@@ -30,7 +31,7 @@ async def weekly_digest(context: Context = TaskiqDepends()):
         if not state:
             state = GeneratorState(
                 job_name="weekly_digest",
-                last_processed_at=datetime.utcnow() - timedelta(days=7),
+                last_processed_at=datetime.now() - timedelta(days=7),
                 version="v1",
             )
             db.add(state)
@@ -41,7 +42,7 @@ async def weekly_digest(context: Context = TaskiqDepends()):
             return
 
         payload = {
-            "week": datetime.utcnow().strftime("%Y-W%U"),
+            "week": datetime.now().strftime("%Y-W%U"),
         }
 
         response = requests.post(
@@ -59,7 +60,7 @@ async def weekly_digest(context: Context = TaskiqDepends()):
         response.raise_for_status()
 
         # Advance state only after successful creation
-        state.last_processed_at = datetime.utcnow()
+        state.last_processed_at = datetime.now()
         db.commit()
 
     finally:

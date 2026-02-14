@@ -1,7 +1,8 @@
 import os
 import smtplib
-from typing import Iterable, Tuple, List
 from email.message import EmailMessage
+from typing import Iterable, Tuple, List
+
 
 
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp")
