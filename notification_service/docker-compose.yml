@@ -40,6 +40,8 @@ services:
   # ===============================
   notification_redis:
     image: redis:8.2.2-alpine
+    expose:
+      - "6379"
     container_name: notification_redis
     volumes:
       - redis_data:/data
