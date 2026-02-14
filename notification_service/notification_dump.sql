@@ -19,7 +19,10 @@ CREATE TABLE IF NOT EXISTS notifications (
     idempotency_key TEXT,
     created_by TEXT DEFAULT 'system',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    scheduled_at TIMESTAMPTZ
+    scheduled_at TIMESTAMPTZ,
+    is_periodic BOOLEAN NOT NULL DEFAULT FALSE,
+    cron_expression TEXT,
+    repeat_until TIMESTAMPTZ
 );
 
 -- Idempotency constraint
