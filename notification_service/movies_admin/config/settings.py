@@ -40,7 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'fastapi_auth.apps.AuthConfig',
     'movies',
+    'notifications',
 ]
+
+NOTIFICATION_API_URL = os.getenv(
+    "NOTIFICATION_API_URL",
+    "http://notification_api:8000/v1/internal/notifications/instant"
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
