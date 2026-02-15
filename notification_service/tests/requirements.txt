@@ -1,0 +1,7 @@
+pytest==8.4.2
+aiohttp==3.13.2
+pytest-asyncio==1.2.0
+fastapi==0.119.1
+redis==7.0.0
+pydantic-settings==2.11.0
+httpx==0.28.1

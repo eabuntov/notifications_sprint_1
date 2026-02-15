@@ -1,0 +1,141 @@
+@startuml
+title Online Cinema Platform – Analytics + Notification Architecture
+
+top to bottom direction
+
+actor User
+actor Admin
+actor Analyst
+
+package "Docker Network: app-network" {
+
+  component "NGINX\n(Reverse Proxy)" as nginx
+
+  together {
+    component "Django Admin\n(movies_admin)" as django
+    component "FastAPI App\n(Public API + Event SDK)" as fastapi
+  }
+
+  together {
+    component "Analytics Ingest API\n(FastAPI)" as ingest
+    component "Analytics Query API\n(FastAPI)" as analytics_api
+  }
+
+  component "Auth Service" as auth
+  component "ETL / Stream Worker" as etl
+
+  queue "Kafka\n(Event Stream)" as kafka
+
+  database "ClickHouse\n(Analytics DWH)" as ch
+  database "Theatre DB\n(PostgreSQL)" as theatre_db
+  database "Auth DB\n(PostgreSQL)" as auth_db
+  database "Redis\n(Cache / Sessions / Rate Limits)" as redis
+
+  component "Jaeger\n(Tracing)" as jaeger
+
+  ' ===== Notification Service =====
+  package "Notification Service" {
+
+    component "Notification API\n(FastAPI)" as notif_api
+    component "Notification Worker\n(Email / SMS / Push)" as notif_worker
+    component "Auto Notification Generator\n(Cron / Scheduler)" as notif_gen
+
+    database "Notification DB\n(PostgreSQL)" as notif_db
+  }
+
+  ' ===== External Providers =====
+  cloud "Email Provider\n(SES / Sendgrid)" as email_provider
+}
+
+' ===== User traffic =====
+User --> nginx : HTTP(S)
+Admin --> nginx : HTTP(S)
+Analyst --> nginx : Analytics queries
+
+nginx --> django : Admin UI
+nginx --> fastapi : Public API
+nginx --> ingest : Event ingestion
+nginx --> analytics_api : Analytics API
+
+' ===== Auth =====
+django --> auth
+fastapi --> auth
+ingest --> auth : optional user resolution
+
+auth --> auth_db
+auth --> redis
+auth --> jaeger
+
+' ===== Core business =====
+fastapi --> theatre_db
+fastapi --> redis
+
+' ===== Analytics pipeline =====
+fastapi --> ingest : UI / business events
+ingest --> kafka : publish events
+
+kafka --> etl : consume analytics streams
+etl --> ch : write aggregates
+
+analytics_api --> ch : read aggregates
+analytics_api --> redis : cache dashboards
+
+' ===== Notification flows =====
+
+' Instant notifications
+fastapi --> notif_api : instant notification event
+notif_api --> notif_db : store notification
+notif_api --> kafka : publish notification event
+
+' Admin-created notifications
+django --> notif_api : create / schedule notification
+notif_api --> notif_db
+notif_api --> kafka
+
+' Automatic notifications
+notif_gen --> notif_db : create logical notification
+notif_gen --> kafka : publish notification event
+
+' Worker processing
+kafka --> notif_worker : notification events
+notif_worker --> notif_db : resolve targets + send log
+notif_worker --> redis : rate limits / checkpoints
+notif_worker --> email_provider : send emails
+
+' ===== Observability =====
+fastapi --> jaeger
+ingest --> jaeger
+analytics_api --> jaeger
+notif_api --> jaeger
+notif_worker --> jaeger
+
+' ===== Notes =====
+note right of kafka
+Event topics:
+- analytics.events
+- notification.events
+- notification.send
+end note
+
+note right of notif_db
+Tables:
+- notifications
+- notification_targets
+- user_notification_settings
+- notification_send_log
+end note
+
+note right of notif_worker
+Guarantees:
+- at-least-once consumption
+- exactly-once delivery per user+channel
+- retry with backoff
+end note
+
+note right of notif_gen
+Idempotent generation:
+- segment versioning
+- last_processed_time
+end note
+
+@enduml
