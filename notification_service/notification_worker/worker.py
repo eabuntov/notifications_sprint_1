@@ -51,7 +51,7 @@ def process_notification(notification_id: str):
         users = resolve_targets(db, notification.id)
 
         for user_id in users:
-            if not can_send_email(user_id):
+            if not can_send_email(user_id, db):
                 continue
 
             send_log = NotificationSendLog(
