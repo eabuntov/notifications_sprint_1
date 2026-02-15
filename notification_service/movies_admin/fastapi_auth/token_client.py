@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 
 API_BASE = settings.AUTH_API_URL
 
+
 def authenticated_request(request, method, path, **kwargs):
     access = request.session.get("access")
     refresh = request.session.get("refresh")
@@ -15,9 +16,9 @@ def authenticated_request(request, method, path, **kwargs):
 
     # If access token expired → refresh
     if resp.status_code == 401 and refresh:
-        refresh_resp = requests.post(f"{API_BASE}/auth/refresh", json={
-            "refresh_token": refresh
-        })
+        refresh_resp = requests.post(
+            f"{API_BASE}/auth/refresh", json={"refresh_token": refresh}
+        )
 
         if refresh_resp.status_code != 200:
             request.session.flush()

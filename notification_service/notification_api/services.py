@@ -37,17 +37,18 @@ class NotificationService:
             self.db.commit()
         except IntegrityError:
             self.db.rollback()
+            return
 
         publish_notification(str(notification.id))
         return notification
 
     def create_scheduled_notification(
-            self,
-            event_key: str,
-            user_id: str,
-            payload: dict,
-            scheduled_at: datetime,
-            idempotency_key: str | None,
+        self,
+        event_key: str,
+        user_id: str,
+        payload: dict,
+        scheduled_at: datetime,
+        idempotency_key: str | None,
     ):
         notification = Notification(
             event_key=event_key,
@@ -67,14 +68,14 @@ class NotificationService:
         return notification
 
     def create_periodic_notification(
-            self,
-            event_key: str,
-            user_id: str,
-            payload: dict,
-            cron_expression: str,
-            start_at: datetime | None,
-            repeat_until: datetime | None,
-            idempotency_key: str | None,
+        self,
+        event_key: str,
+        user_id: str,
+        payload: dict,
+        cron_expression: str,
+        start_at: datetime | None,
+        repeat_until: datetime | None,
+        idempotency_key: str | None,
     ):
         notification = Notification(
             event_key=event_key,

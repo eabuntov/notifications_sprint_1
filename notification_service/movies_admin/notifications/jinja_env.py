@@ -1,4 +1,3 @@
-
 from jinja2 import Environment, BaseLoader
 
 env = Environment(

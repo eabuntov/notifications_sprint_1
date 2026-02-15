@@ -3,10 +3,9 @@ from sqlalchemy import (
     Column,
     String,
     JSON,
+    Boolean,
     DateTime,
-    Enum,
     ForeignKey,
-    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -14,22 +13,74 @@ from sqlalchemy.orm import relationship
 
 from db import Base
 
+
 class Notification(Base):
     __tablename__ = "notifications"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
     event_key = Column(String, nullable=False)
     template_id = Column(UUID(as_uuid=True), nullable=True)
-    payload = Column(JSON, nullable=False)
-    status = Column(String, default="queued")
-    idempotency_key = Column(String, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    __table_args__ = (
-        UniqueConstraint("event_key", "idempotency_key", name="uniq_event_idempotency"),
+    payload = Column(JSON, nullable=False)
+
+    status = Column(
+        String,
+        nullable=False,
+        default="queued",
     )
 
-    targets = relationship("NotificationTarget", back_populates="notification")
+    idempotency_key = Column(String, nullable=True)
+
+    created_by = Column(String, default="system")
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+
+    scheduled_at = Column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    is_periodic = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+    )
+
+    cron_expression = Column(
+        String,
+        nullable=True,
+    )
+
+    repeat_until = Column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    targets = relationship(
+        "NotificationTarget",
+        back_populates="notification",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+    def add_user_target(self, user_id: str) -> None:
+        """
+        Adds a single user target to the notification.
+        Does NOT commit automatically.
+        """
+
+        target = NotificationTarget(
+            notification_id=self.id,
+            target_type="user",
+            target_value=str(user_id),
+        )
+
+        self.targets.append(target)
 
 
 class NotificationTarget(Base):

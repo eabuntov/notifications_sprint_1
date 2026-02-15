@@ -9,17 +9,18 @@ class UUIDMixin(models.Model):
     class Meta:
         abstract = True
 
+
 class TimeStampedMixin(models.Model):
-    created = models.DateTimeField(_('created'), auto_now_add=True)
-    modified = models.DateTimeField(_('modified'), auto_now=True)
+    created = models.DateTimeField(_("created"), auto_now_add=True)
+    modified = models.DateTimeField(_("modified"), auto_now=True)
 
     class Meta:
         abstract = True
 
 
 class Genre(UUIDMixin, TimeStampedMixin):
-    name = models.CharField(_('Genre name'), unique=True, max_length=100)
-    description = models.TextField(_('Description'), blank=True, null=True)
+    name = models.CharField(_("Genre name"), unique=True, max_length=100)
+    description = models.TextField(_("Description"), blank=True, null=True)
 
     class Meta:
         db_table = 'content"."genre'
@@ -29,8 +30,9 @@ class Genre(UUIDMixin, TimeStampedMixin):
     def __str__(self):
         return self.name
 
+
 class Person(UUIDMixin, TimeStampedMixin):
-    full_name = models.CharField(_('Full name'), max_length=150)
+    full_name = models.CharField(_("Full name"), max_length=150)
 
     class Meta:
         db_table = 'content"."person'
@@ -40,8 +42,8 @@ class Person(UUIDMixin, TimeStampedMixin):
     def __str__(self):
         return self.full_name
 
-class FilmWork(UUIDMixin, TimeStampedMixin):
 
+class FilmWork(UUIDMixin, TimeStampedMixin):
     TYPE_CHOICES = [
         (_("Film"), _("Film")),
         (_("TV show"), _("TV show")),
@@ -49,11 +51,13 @@ class FilmWork(UUIDMixin, TimeStampedMixin):
         (_("Video"), _("Video")),
     ]
 
-    title = models.CharField(_('Title'), max_length=255)
-    description = models.TextField(_('Description'), blank=True, null=True)
-    creation_date = models.DateField(_('Creation date'), blank=True, null=True)
-    rating = models.DecimalField(_('Rating'), max_digits=3, decimal_places=1, blank=True, null=True)
-    type = models.TextField(_('Type'), choices=TYPE_CHOICES)
+    title = models.CharField(_("Title"), max_length=255)
+    description = models.TextField(_("Description"), blank=True, null=True)
+    creation_date = models.DateField(_("Creation date"), blank=True, null=True)
+    rating = models.DecimalField(
+        _("Rating"), max_digits=3, decimal_places=1, blank=True, null=True
+    )
+    type = models.TextField(_("Type"), choices=TYPE_CHOICES)
 
     genres = models.ManyToManyField(Genre, through="GenreFilmWork")
     persons = models.ManyToManyField(Person, through="PersonFilmWork")
@@ -67,9 +71,8 @@ class FilmWork(UUIDMixin, TimeStampedMixin):
         return self.title
 
 
-
 class GenreFilmWork(UUIDMixin):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, verbose_name=_('Genre'))
+    genre = models.ForeignKey(Genre, on_delete=models.CASCADE, verbose_name=_("Genre"))
     film_work = models.ForeignKey(FilmWork, on_delete=models.CASCADE)
 
     class Meta:
@@ -80,7 +83,6 @@ class GenreFilmWork(UUIDMixin):
 
 
 class PersonFilmWork(UUIDMixin):
-
     ROLE_CHOICES = [
         (_("Actor"), _("Actor")),
         (_("Director"), _("Director")),
@@ -89,9 +91,11 @@ class PersonFilmWork(UUIDMixin):
         (_("Composer"), _("Composer")),
     ]
 
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name=_('Person'))
+    person = models.ForeignKey(
+        Person, on_delete=models.CASCADE, verbose_name=_("Person")
+    )
     film_work = models.ForeignKey(FilmWork, on_delete=models.CASCADE)
-    role = models.TextField(choices=ROLE_CHOICES, verbose_name=_('Role'))
+    role = models.TextField(choices=ROLE_CHOICES, verbose_name=_("Role"))
 
     class Meta:
         db_table = 'content"."person_film_work'

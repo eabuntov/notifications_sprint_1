@@ -6,93 +6,183 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='FilmWork',
+            name="FilmWork",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('modified', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('creation_date', models.DateField(blank=True, null=True)),
-                ('rating', models.DecimalField(blank=True, decimal_places=1, max_digits=3, null=True)),
-                ('type', models.TextField(choices=[('фильм', 'фильм'), ('телепередача', 'телепередача'), ('сериал', 'сериал'), ('видео', 'видео')])),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("modified", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("creation_date", models.DateField(blank=True, null=True)),
+                (
+                    "rating",
+                    models.DecimalField(
+                        blank=True, decimal_places=1, max_digits=3, null=True
+                    ),
+                ),
+                (
+                    "type",
+                    models.TextField(
+                        choices=[
+                            ("фильм", "фильм"),
+                            ("телепередача", "телепередача"),
+                            ("сериал", "сериал"),
+                            ("видео", "видео"),
+                        ]
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Film',
-                'verbose_name_plural': 'Films',
-                'db_table': 'content"."film_work',
+                "verbose_name": "Film",
+                "verbose_name_plural": "Films",
+                "db_table": 'content"."film_work',
             },
         ),
         migrations.CreateModel(
-            name='Genre',
+            name="Genre",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('modified', models.DateTimeField(auto_now=True)),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("modified", models.DateTimeField(auto_now=True)),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True, null=True)),
             ],
             options={
-                'verbose_name': 'Genre',
-                'verbose_name_plural': 'Genres',
-                'db_table': 'content"."genre',
+                "verbose_name": "Genre",
+                "verbose_name_plural": "Genres",
+                "db_table": 'content"."genre',
             },
         ),
         migrations.CreateModel(
-            name='Person',
+            name="Person",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created', models.DateTimeField(auto_now_add=True)),
-                ('modified', models.DateTimeField(auto_now=True)),
-                ('full_name', models.CharField(max_length=150)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("created", models.DateTimeField(auto_now_add=True)),
+                ("modified", models.DateTimeField(auto_now=True)),
+                ("full_name", models.CharField(max_length=150)),
             ],
             options={
-                'verbose_name': 'Person',
-                'verbose_name_plural': 'People',
-                'db_table': 'content"."person',
+                "verbose_name": "Person",
+                "verbose_name_plural": "People",
+                "db_table": 'content"."person',
             },
         ),
         migrations.CreateModel(
-            name='PersonFilmWork',
+            name="PersonFilmWork",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('role', models.TextField(choices=[('актер', 'актер'), ('режиссер', 'режиссер'), ('сценарист', 'сценарист'), ('оператор', 'оператор'), ('композитор', 'композитор')])),
-                ('film_work', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='movies.filmwork')),
-                ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='movies.person')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "role",
+                    models.TextField(
+                        choices=[
+                            ("актер", "актер"),
+                            ("режиссер", "режиссер"),
+                            ("сценарист", "сценарист"),
+                            ("оператор", "оператор"),
+                            ("композитор", "композитор"),
+                        ]
+                    ),
+                ),
+                (
+                    "film_work",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="movies.filmwork",
+                    ),
+                ),
+                (
+                    "person",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="movies.person"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'content"."person_film_work',
-                'unique_together': {('person', 'film_work', 'role')},
+                "db_table": 'content"."person_film_work',
+                "unique_together": {("person", "film_work", "role")},
             },
         ),
         migrations.CreateModel(
-            name='GenreFilmWork',
+            name="GenreFilmWork",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('film_work', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='movies.filmwork')),
-                ('genre', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='movies.genre')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "film_work",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="movies.filmwork",
+                    ),
+                ),
+                (
+                    "genre",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="movies.genre"
+                    ),
+                ),
             ],
             options={
-                'db_table': 'content"."genre_film_work',
-                'unique_together': {('genre', 'film_work')},
+                "db_table": 'content"."genre_film_work',
+                "unique_together": {("genre", "film_work")},
             },
         ),
         migrations.AddField(
-            model_name='filmwork',
-            name='genres',
-            field=models.ManyToManyField(through='movies.GenreFilmWork', to='movies.genre'),
+            model_name="filmwork",
+            name="genres",
+            field=models.ManyToManyField(
+                through="movies.GenreFilmWork", to="movies.genre"
+            ),
         ),
         migrations.AddField(
-            model_name='filmwork',
-            name='persons',
-            field=models.ManyToManyField(through='movies.PersonFilmWork', to='movies.person'),
+            model_name="filmwork",
+            name="persons",
+            field=models.ManyToManyField(
+                through="movies.PersonFilmWork", to="movies.person"
+            ),
         ),
     ]

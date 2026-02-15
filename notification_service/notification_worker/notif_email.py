@@ -4,7 +4,6 @@ from email.message import EmailMessage
 from typing import Iterable, Tuple, List
 
 
-
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER")
@@ -73,6 +72,7 @@ def _build_message(
 # Public API
 # ===============================
 
+
 def send_email(
     to_email: str,
     subject: str,
@@ -101,8 +101,7 @@ def send_bulk_emails(
         ]
     """
     messages: List[EmailMessage] = [
-        _build_message(to, subject, body, html)
-        for to, subject, body, html in emails
+        _build_message(to, subject, body, html) for to, subject, body, html in emails
     ]
 
     with SMTPClient() as client:

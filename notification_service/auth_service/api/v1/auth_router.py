@@ -26,7 +26,9 @@ from rate_limit.rate_limiter import rate_limit
 
 from api.v1.oauth_classes import OAuthProvider
 
-auth_router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(rate_limit("auth"))])
+auth_router = APIRouter(
+    prefix="/auth", tags=["auth"], dependencies=[Depends(rate_limit("auth"))]
+)
 
 
 @auth_router.post("/register", response_model=UserRead)
@@ -144,29 +146,26 @@ async def get_login_history(
         offset=offset,
     )
 
+
 @auth_router.get("/me", response_model=UserRead)
 async def get_me(current_user: User = Depends(require_authenticated_user)):
     return current_user
 
+
 templates = Jinja2Templates(directory="templates")
 
+
 @auth_router.get("/login", response_class=HTMLResponse)
-async def login_oauth(
-request: Request
-):
-    return templates.TemplateResponse(
-        "login.html",
-        {"request": request}
-    )
+async def login_oauth(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
 
 @auth_router.get("/oauth/{provider}")
 async def oauth_login(provider: str, request: Request):
     oauth = OAuthProvider.get_provider(provider)
 
     redirect_uri = str(request.url_for("oauth_callback", provider=provider))
-    return {
-        "authorize_url": oauth.get_authorize_url(redirect_uri)
-    }
+    return {"authorize_url": oauth.get_authorize_url(redirect_uri)}
 
 
 @auth_router.post("/login-form")
@@ -187,6 +186,7 @@ async def login_form(
     )
 
     return tokens.create_token_pair(user)
+
 
 @auth_router.get("/oauth/{provider}/callback", name="oauth_callback")
 async def oauth_callback(
