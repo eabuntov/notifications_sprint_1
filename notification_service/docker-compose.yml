@@ -123,8 +123,9 @@ services:
     env_file:
       - .env
     depends_on:
-      - mongo_ingest_api
+      - notification_api
     volumes:
+      - ../notification_api:/opt/app/notification_api
       - ./:/opt/app/
       - ./config:/opt/app/src/config
     networks:

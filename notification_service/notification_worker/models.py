@@ -2,6 +2,7 @@ import uuid
 from sqlalchemy import (
     Column,
     String,
+    Boolean,
     DateTime,
     Enum,
     ForeignKey,

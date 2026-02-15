@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 # Adjust import according to your project structure
-from ..notification_api.main import app
+from notification_api.main import app
 
 
 @pytest.fixture(scope="session")
