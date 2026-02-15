@@ -9,8 +9,9 @@ from schemas import (
     NotificationResponse,
 )
 from services import NotificationService
+from dependencies.auth import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 def get_db():
