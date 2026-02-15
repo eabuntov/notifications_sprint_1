@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-import requests
+import aiohttp
 from taskiq import TaskiqDepends, Context
 from broker import broker
 from analytics import has_events_since
@@ -48,19 +48,20 @@ async def generate_one_time_notification(
     Create a one-time notification immediately.
     """
 
-    response = requests.post(
-        INSTANT_URL,
-        json={
-            "event_key": event_key,
-            "target": {
-                "type": target_type,
-                "value": target_value,
+    async with aiohttp.ClientSession(timeout=5) as session:
+        async with session.post(
+            INSTANT_URL,
+            json={
+                "event_key": event_key,
+                "target": {
+                    "type": target_type,
+                    "value": target_value,
+                },
+                "payload": payload,
             },
-            "payload": payload,
-        },
-        timeout=5,
-    )
-    response.raise_for_status()
+        ) as response:
+            response.raise_for_status()
+            return await response.json()
 
 @broker.task(schedule=[{"cron": "* * * * *"}])
 async def every_minute_notifications(context: Context = TaskiqDepends()):
@@ -79,23 +80,22 @@ async def every_minute_notifications(context: Context = TaskiqDepends()):
         payload = {
             "timestamp": datetime.now().isoformat(),
         }
-
-        response = requests.post(
-            INSTANT_URL,
-            json={
-                "event_key": "minute_event",
-                "target": {
-                    "type": "segment",
-                    "value": "active_users",
-                },
-                "payload": payload,
-            },
-            timeout=5,
-        )
-        response.raise_for_status()
-
-        state.last_processed_at = datetime.now()
-        db.commit()
+        async with aiohttp.ClientSession(timeout=5) as session:
+            async with session.post(
+                    INSTANT_URL,
+                    json={
+                        "event_key": "minute_event",
+                        "target": {
+                            "type": "segment",
+                            "value": "active_users",
+                        },
+                        "payload": payload,
+                    },
+            ) as response:
+                response.raise_for_status()
+                state.last_processed_at = datetime.now()
+                db.commit()
+                return await response.json()
 
     finally:
         db.close()
@@ -118,23 +118,22 @@ async def daily_digest(context: Context = TaskiqDepends()):
         payload = {
             "date": datetime.now().strftime("%Y-%m-%d"),
         }
-
-        response = requests.post(
-            INSTANT_URL,
-            json={
-                "event_key": "daily_digest",
-                "target": {
-                    "type": "segment",
-                    "value": f"daily_active_{state.version}",
-                },
-                "payload": payload,
-            },
-            timeout=5,
-        )
-        response.raise_for_status()
-
-        state.last_processed_at = datetime.utcnow()
-        db.commit()
+        async with aiohttp.ClientSession(timeout=5) as session:
+            async with session.post(
+                    INSTANT_URL,
+                    json={
+                        "event_key": "minute_event",
+                        "target": {
+                            "type": "segment",
+                            "value": f"daily_active_{state.version}",
+                        },
+                        "payload": payload,
+                    },
+            ) as response:
+                response.raise_for_status()
+                state.last_processed_at = datetime.now()
+                db.commit()
+                return await response.json()
 
     finally:
         db.close()
@@ -158,23 +157,22 @@ async def weekly_digest(context: Context = TaskiqDepends()):
         payload = {
             "week": datetime.now().strftime("%Y-W%U"),
         }
-
-        response = requests.post(
-            INSTANT_URL,
-            json={
-                "event_key": "weekly_digest",
-                "target": {
-                    "type": "segment",
-                    "value": f"weekly_active_{state.version}",
-                },
-                "payload": payload,
-            },
-            timeout=5,
-        )
-        response.raise_for_status()
-
-        state.last_processed_at = datetime.utcnow()
-        db.commit()
+        async with aiohttp.ClientSession(timeout=5) as session:
+            async with session.post(
+                    INSTANT_URL,
+                    json={
+                        "event_key": "minute_event",
+                        "target": {
+                            "type": "segment",
+                            "value": f"weeky_active_{state.version}",
+                        },
+                        "payload": payload,
+                    },
+            ) as response:
+                response.raise_for_status()
+                state.last_processed_at = datetime.now()
+                db.commit()
+                return await response.json()
 
     finally:
         db.close()
