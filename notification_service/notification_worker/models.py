@@ -53,3 +53,12 @@ class NotificationSendLog(Base):
             name="uniq_notification_user_channel",
         ),
     )
+
+
+class UserNotificationSettings(Base):
+    __tablename__ = "user_notification_settings"
+
+    user_id = Column(UUID(as_uuid=True), primary_key=True)
+    channel = Column(String, primary_key=True)
+    enabled = Column(Boolean, nullable=False, default=True)
+    frequency = Column(String, nullable=False, default="immediate")
