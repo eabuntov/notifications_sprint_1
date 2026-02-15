@@ -37,6 +37,7 @@ class NotificationService:
             self.db.commit()
         except IntegrityError:
             self.db.rollback()
+            return
 
         publish_notification(str(notification.id))
         return notification
