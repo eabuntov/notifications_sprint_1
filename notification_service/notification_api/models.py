@@ -3,12 +3,9 @@ from sqlalchemy import (
     Column,
     String,
     JSON,
-    JSONB,
     Boolean,
     DateTime,
-    Enum,
     ForeignKey,
-    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID
@@ -24,7 +21,7 @@ class Notification(Base):
     event_key = Column(String, nullable=False)
     template_id = Column(UUID(as_uuid=True), nullable=True)
 
-    payload = Column(JSONB, nullable=False)
+    payload = Column(JSON, nullable=False)
 
     status = Column(
         String,
