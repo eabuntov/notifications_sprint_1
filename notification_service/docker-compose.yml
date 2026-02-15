@@ -35,9 +35,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ===============================
-  # Redis (rate limits, checkpoints)
-  # ===============================
   notification_redis:
     image: redis:8.2.2-alpine
     expose:
@@ -48,9 +45,6 @@ services:
     networks:
       - app-network
 
-  # ===============================
-  # Notification API
-  # ===============================
   notification_api:
     build:
       context: ./notification_api/
@@ -76,9 +70,6 @@ services:
       - "8081:8000"
     restart: unless-stopped
 
-  # ===============================
-  # Notification Worker (email)
-  # ===============================
   notification_worker:
     build:
       context: ./notification_worker
@@ -105,9 +96,6 @@ services:
       replicas: 3
     restart: unless-stopped
 
-  # ===============================
-  # Auto Notification Generator
-  # ===============================
   notification_generator:
     build:
       context: ./notification_generator
@@ -127,6 +115,20 @@ services:
     networks:
       - app-network
     restart: unless-stopped
+
+  test:
+    build:
+      context: ./tests
+    command: [ "pytest", "-v", "./", "--maxfail=1", "--disable-warnings", "-q" ]
+    env_file:
+      - .env
+    depends_on:
+      - mongo_ingest_api
+    volumes:
+      - ./:/opt/app/
+      - ./config:/opt/app/src/config
+    networks:
+      - app-network
 
   kafka:
     image: apache/kafka:4.1.1
