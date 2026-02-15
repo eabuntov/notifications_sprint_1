@@ -3,6 +3,7 @@ from sqlalchemy import (
     Column,
     String,
     Boolean,
+    Integer,
     DateTime,
     Enum,
     ForeignKey,
@@ -63,3 +64,13 @@ class UserNotificationSettings(Base):
     channel = Column(String, primary_key=True)
     enabled = Column(Boolean, nullable=False, default=True)
     frequency = Column(String, nullable=False, default="immediate")
+
+
+
+class AuthUser(Base):
+    __tablename__ = "auth_user"
+    __table_args__ = {"schema": "public"}
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String)
+    is_active = Column(Boolean)

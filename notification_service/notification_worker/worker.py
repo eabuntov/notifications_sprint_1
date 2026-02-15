@@ -10,7 +10,7 @@ from models import (
 )
 from notif_email import send_email
 from templates import render_template
-from settings import can_send_email
+from settings import can_send_email, get_user_email
 
 
 def resolve_targets(db, notification_id):
@@ -51,7 +51,14 @@ def process_notification(notification_id: str):
         users = resolve_targets(db, notification.id)
 
         for user_id in users:
+
+            # Permission check
             if not can_send_email(user_id, db):
+                continue
+
+            # Resolve real email
+            email = get_user_email(db, user_id)
+            if not email:
                 continue
 
             send_log = NotificationSendLog(
@@ -66,15 +73,21 @@ def process_notification(notification_id: str):
                 db.commit()
             except IntegrityError:
                 db.rollback()
-                continue  # already sent
+                continue  # already processed (idempotency)
 
             try:
                 subject = f"Notification: {notification.event_key}"
+
                 body = render_template(
                     "Hello {{ user_id }}",
                     {"user_id": user_id},
                 )
-                send_email("user@example.com", subject, body)
+
+                send_email(
+                    to_email=email,
+                    subject=subject,
+                    body=body,
+                )
 
                 send_log.status = "sent"
                 db.commit()
