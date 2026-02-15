@@ -1,5 +1,5 @@
-taskiq
-taskiq-redis
-psycopg2-binary
-sqlalchemy
-requests
+taskiq==0.12.1
+taskiq-redis==1.2.2
+psycopg2-binary==2.9.11
+sqlalchemy==2.0.46
+requests==2.32.5
