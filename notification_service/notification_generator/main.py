@@ -11,6 +11,7 @@ scheduler = TaskiqScheduler(
     sources=[LabelScheduleSource(broker)],
 )
 
+
 async def run():
     await broker.startup()
     await scheduler.startup()
@@ -18,6 +19,7 @@ async def run():
         task = await tasks.generate_one_time_notification.kiq(1)
         await task.wait_result(timeout=2)
         await asyncio.sleep(1)
+
 
 if __name__ == "__main__":
     asyncio.run(run())

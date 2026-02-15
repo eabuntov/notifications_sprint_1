@@ -43,15 +43,12 @@ def process_notification(notification_id: str):
 
     try:
         notification = (
-            db.query(Notification)
-            .filter(Notification.id == notification_id)
-            .one()
+            db.query(Notification).filter(Notification.id == notification_id).one()
         )
 
         users = resolve_targets(db, notification.id)
 
         for user_id in users:
-
             # Permission check
             if not can_send_email(user_id, db):
                 continue

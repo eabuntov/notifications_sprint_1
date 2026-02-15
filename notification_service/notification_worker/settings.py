@@ -23,12 +23,9 @@ def can_send_email(user_id: str, db: Session) -> bool:
 
     return setting.enabled
 
+
 def get_user_email(db: Session, user_id: str) -> str | None:
-    user = (
-        db.query(AuthUser)
-        .filter(AuthUser.id == int(user_id))
-        .one_or_none()
-    )
+    user = db.query(AuthUser).filter(AuthUser.id == int(user_id)).one_or_none()
 
     if not user:
         return None

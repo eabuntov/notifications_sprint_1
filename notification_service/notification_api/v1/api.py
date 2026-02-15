@@ -42,6 +42,7 @@ def create_instant_notification(
         status=notification.status,
     )
 
+
 @router.post(
     "/v1/notifications/scheduled",
     response_model=NotificationResponse,

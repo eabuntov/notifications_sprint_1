@@ -63,6 +63,7 @@ async def generate_one_time_notification(
             response.raise_for_status()
             return await response.json()
 
+
 @broker.task(schedule=[{"cron": "* * * * *"}])
 async def every_minute_notifications(context: Context = TaskiqDepends()):
     """
@@ -82,15 +83,15 @@ async def every_minute_notifications(context: Context = TaskiqDepends()):
         }
         async with aiohttp.ClientSession(timeout=5) as session:
             async with session.post(
-                    INSTANT_URL,
-                    json={
-                        "event_key": "minute_event",
-                        "target": {
-                            "type": "segment",
-                            "value": "active_users",
-                        },
-                        "payload": payload,
+                INSTANT_URL,
+                json={
+                    "event_key": "minute_event",
+                    "target": {
+                        "type": "segment",
+                        "value": "active_users",
                     },
+                    "payload": payload,
+                },
             ) as response:
                 response.raise_for_status()
                 state.last_processed_at = datetime.now()
@@ -120,15 +121,15 @@ async def daily_digest(context: Context = TaskiqDepends()):
         }
         async with aiohttp.ClientSession(timeout=5) as session:
             async with session.post(
-                    INSTANT_URL,
-                    json={
-                        "event_key": "minute_event",
-                        "target": {
-                            "type": "segment",
-                            "value": f"daily_active_{state.version}",
-                        },
-                        "payload": payload,
+                INSTANT_URL,
+                json={
+                    "event_key": "minute_event",
+                    "target": {
+                        "type": "segment",
+                        "value": f"daily_active_{state.version}",
                     },
+                    "payload": payload,
+                },
             ) as response:
                 response.raise_for_status()
                 state.last_processed_at = datetime.now()
@@ -137,7 +138,6 @@ async def daily_digest(context: Context = TaskiqDepends()):
 
     finally:
         db.close()
-
 
 
 @broker.task(schedule=[{"cron": "0 9 * * 1"}])
@@ -159,15 +159,15 @@ async def weekly_digest(context: Context = TaskiqDepends()):
         }
         async with aiohttp.ClientSession(timeout=5) as session:
             async with session.post(
-                    INSTANT_URL,
-                    json={
-                        "event_key": "minute_event",
-                        "target": {
-                            "type": "segment",
-                            "value": f"weeky_active_{state.version}",
-                        },
-                        "payload": payload,
+                INSTANT_URL,
+                json={
+                    "event_key": "minute_event",
+                    "target": {
+                        "type": "segment",
+                        "value": f"weeky_active_{state.version}",
                     },
+                    "payload": payload,
+                },
             ) as response:
                 response.raise_for_status()
                 state.last_processed_at = datetime.now()
@@ -176,4 +176,3 @@ async def weekly_digest(context: Context = TaskiqDepends()):
 
     finally:
         db.close()
-

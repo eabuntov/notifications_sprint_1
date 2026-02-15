@@ -14,7 +14,6 @@ config = context.config
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from models import Base
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -34,11 +33,13 @@ target_metadata = None
 
 load_dotenv("../..")
 
+
 def get_database_url():
     return os.getenv("NOTIF_DB_URL")
 
 
 config.set_main_option("sqlalchemy.url", get_database_url())
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -78,9 +79,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

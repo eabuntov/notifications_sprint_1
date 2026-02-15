@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def has_events_since(last_processed_at: datetime) -> bool:

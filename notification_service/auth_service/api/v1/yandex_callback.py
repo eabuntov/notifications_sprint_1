@@ -1,5 +1,5 @@
 import httpx
-from fastapi import Query, Depends, HTTPException
+from fastapi import Query, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from redis import Redis
 from starlette import status
@@ -7,6 +7,8 @@ from starlette import status
 from auth_service.dependencies import get_user_service, get_token_service, get_redis
 from auth_service.services.token_service import TokenService
 from auth_service.services.user_service import UserService
+
+from notification_service.auth_service.api.v1.auth_router import auth_router
 
 YANDEX_TOKEN_URL = "https://oauth.yandex.ru/token"
 YANDEX_USERINFO_URL = "https://login.yandex.ru/info"
